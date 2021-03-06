@@ -35,7 +35,7 @@ en caso de elegir "y", entonces si damos a espacio podremos disparar proyectiles
 en caso de elegir "n", entonces si damos a espacio tendremos que poner unos datos en la consola
 
 El programa tambien te calculara ciertos datos por si solo
-<img src="ScreenshotsGifs\console.PNG" width="48%">
+<img src="ScreenshotsGifs\console.PNG" width="100%">
 
 ### Controles especiales
 
