@@ -7,10 +7,6 @@ import tabulate # Tabula los deatos obtenidos para mayor presentacion
 import os       # Determina el sistema operativo para limpiar la cosola
 import enum     # Libreria para estados
 #---------------------------------------------------------------------------------------------------------------------------------
-class TypeSimulator(enum.Enum): # CLASE QUE PERMITE DETERMINAR EL ESTADO DE EJECUCION
-    Simulator     = 0 # Estado de simulacion normal
-    SimulatorData = 1 # Estado de simulacion mediante entrada en teclado con distancia y angulo
-#---------------------------------------------------------------------------------------------------------------------------------
 G = 9.81 # Constante de gravedad
 #---------------------------------------------------------------------------------------------------------------------------------
 class Pixel(): # CLASE QUE ESTABLECE LOS PIXELES DE LA TRAYECTORIA
@@ -24,51 +20,6 @@ class Pixel(): # CLASE QUE ESTABLECE LOS PIXELES DE LA TRAYECTORIA
     def draw(self): # METODO QUE DIBUJA EL PIXEL
         pyxel.pset(self.x,self.y,self.col) # Dibuja el pixel respecto a su ubicacion y color de creacion
 #---------------------------------------------------------------------------------------------------------------------------------
-class BallMathV():
-    #-----------------------------------------------------------------------------------------------------------------------------
-    def __init__(self,x,y,r,col,a,xMax,tTotal): # CONSTRUCTOR DEL OBJETO DE PELOTA RESPECTO A DATOS INSUFICIENTES
-        # INICIALIZANDO VARIABLES DE NUESTRO OBJETO
-        self.x    = x        # X ubicacion 
-        self.xi   = x        # X ubicancion para determinar posicion incial
-        self.y    = y        # Y ubicacion 
-        self.yi   = y        # Y ubicacion para determinar altura inicial
-        self.a    = a        # Angulo
-        self.xMax = xMax     # Distancia total recorrida
-        self.t    = 0        # Restablecemos tiempo
-        self.r    = r        # Radio
-        self.col  = col      # Color
-        self.tTotal = tTotal # Tiempo total de vuelo
-        # INICIALIZANDO OTROS FACTORES INDEPENDIENTES
-        self.listPixel      = []                     # Lista de objetos que almacena el recorrido de la trayectoria
-        self.starting_point = time.time()            # Calcula el tiempo respecto a la inicializacion del objeto
-        self.dif            = pyxel.height - self.yi # Calcula la diferencia del objeto respecto al suelo
-        # CALCULAMOS DATOS
-        # Velocidad Inicial = hipotenusa o Fuerza lanzamiento respuesta a problema
-        self.vi = round((G*self.tTotal)/(2*math.sin(math.radians(self.a))),2)
-        # DATOS COMPLEMENTARIOS
-        self.viY    = round( math.sin(math.radians(self.a))*self.vi,2 ) # Velocidad Inicial Y - Componente rectangular Y
-        self.vX     = round( math.cos(math.radians(self.a))*self.vi,2 ) # Velocidad vector X constante - Componente rectangular X
-        self.ts     = round( self.tTotal/2,2 )                          # Tiempo de subida al punto mas alto
-        self.yMax   = round( math.pow(self.viY,2)/(2*(G)),2 )           # Altura maxima alcanzada
-        self.xTotal = round( self.vX*self.tTotal,2 )                    # Despazamiento en X total
-        self.vFy    = round( self.viY-G*self.tTotal,2 )                 # Velocidad final Y - Componente rectangular Y
-        self.vF     = round( math.sqrt(math.pow(self.vX,2)+math.pow(self.vFy,2)),2 ) # Velocidad final
-    #-----------------------------------------------------------------------------------------------------------------------------
-    def update(self): # METODO UPDATE QUE ACTUALIZA LA POSICION RESPECTO AL TIEMPO
-        if self.t <= self.tTotal: # CALCULAMOS SI PUEDE CALCULAR MAS TIEMPO, SIMULA LA GRAVEDAD EN FUNCION DEL TIEMPO
-            self.elapsed_time = round(time.time()-self.starting_point,2) # Diferencia del tiempo actual con el de inicio
-            self.t            = self.elapsed_time                        # Determinamos tiempo actual desde la creacion del balon
-            # CALCULAMOS DESPLAZAMIENTO CON RELACION AL TIEMPO
-            self.x = self.xi+self.vX*self.t                                                   # Calculando posixion en eje X
-            self.y = (self.viY*self.t+(-1/2*G)*math.pow(self.t,2))*-1+(pyxel.height-self.dif) # Calucalndo posicion en eje Y
-            # TRAYECTORIA
-            self.listPixel.append(Pixel(self.x,self.y,self.col)) # Añade a la lista de objetos la posicion actual de trayectoria
-    #-----------------------------------------------------------------------------------------------------------------------------
-    def draw(self): # METODO DE DIBUJO DE PROYECTIL Y TRAYECTORIA
-        pyxel.circ(self.x,self.y,self.r,self.col) # Dibujando proyectil respecto a la posicion calculada
-        for pixel in self.listPixel:              # Iteramos sobre los objetos de la trayectoria    
-            pixel.draw()                          # Dibujamos objeto en pantalla
-#---------------------------------------------------------------------------------------------------------------------------------        
 class Ball(): # CLASE PROYECTIL CON RESPECTO A VELOCIDAD INICIAL Y ANGULO
     #-----------------------------------------------------------------------------------------------------------------------------
     def __init__(self,x,y,r,col,a,vi): # CONSTRUCTOR, POSICION, TAMAÑO, COLOR, ANGULO Y VELOCIDAD INICAL
@@ -159,16 +110,13 @@ class App(): # CLASE PRINCIPAL DEL PROGRAMA
     def __init__(self): # INICIALIZACION
         # INICIALIZACION DE ESTADO
         self.clearConsole()                                        # Borramos consola
-        inputState = input("Desea usar el simulador? y/n:  ")      # Preguntamos estado
-        if inputState == "y": self.state = TypeSimulator.Simulator # Asignamos estado de simulacion
-        else: self.state = TypeSimulator.SimulatorData             # Asignamos estado de simulacion mediante datos
         # INICIALIZAR VENTANA
         pyxel.init( width      = 192,              # Ancho de ventana
                     height     = 128,              # Altura de ventana
                     caption    = "ParabolicShot",  # Titulo de la ventana
                     fps        = 200,              # FPS del programa
-                    fullscreen = False,            # Estado de pantalla inicial
-                    scale      = 4)                # Eyscala de la ventana inicial
+                    fullscreen = True,            # Estado de pantalla inicial
+                    scale      = 8)                # Eyscala de la ventana inicial
         # INICIALIZACION DE VARIBALES
         self.listBalls = []                # Lista de objetos con proyectiles
         self.Triangulo = Pitagoras(10,120) # Cracion del triangulo respecto al vector 1 (X,Y)
@@ -178,7 +126,7 @@ class App(): # CLASE PRINCIPAL DEL PROGRAMA
     #-----------------------------------------------------------------------------------------------------------------------------
     def update(self): # METODOD DE LOGICA
         self.checkInput() # Comprueba la pulsacion de teclas
-        if self.state == TypeSimulator.Simulator: self.Triangulo.update() # Si esta en modo simulacion ejecuta el triangulo
+        self.Triangulo.update() # Si esta en modo simulacion ejecuta el triangulo
         for ball in self.listBalls: # Iteramos en la lista de proyectiles
             ball.update()           # Actualizamos la posicion de los proyectiles
     #-----------------------------------------------------------------------------------------------------------------------------
@@ -186,28 +134,18 @@ class App(): # CLASE PRINCIPAL DEL PROGRAMA
         pyxel.cls(0)                # Color de fondo
         for ball in self.listBalls: # Iteramos en la lista de proyectiles
             ball.draw()             # Actualizamos posicion en pantalla
-        if self.state == TypeSimulator.Simulator: # Comprobamos el estado en simulacion
-            self.Triangulo.draw()                 # Dibujar triangulo
-            pyxel.text(5,5,"Angulo: "+str(self.Triangulo.A)+"°",15)    # Dibujamos angulo del triangulo
-            pyxel.text(5,10,"Fuerza: "+str(self.Triangulo.h)+"m/s",15) # Dibujamos fuerza de disparo - hipotenusa
+        self.Triangulo.draw()                 # Dibujar triangulo
+        pyxel.text(5,5,"Angulo: "+str(self.Triangulo.A)+"°",15)    # Dibujamos angulo del triangulo
+        pyxel.text(5,10,"Fuerza: "+str(self.Triangulo.h)+"m/s",15) # Dibujamos fuerza de disparo - hipotenusa
     #----------------------------------------------------------------------------------------------------------------------------
     def checkInput(self): # METODO COMPROBADOR DE ENTRADA DEL TECLADO
-        if (pyxel.btnp(pyxel.KEY_SPACE)): # Comprobacion de tecla espacio
-            if self.state == TypeSimulator.SimulatorData: # Si esta en modo simulacion con entrada
-                self.clearConsole()                       # Ejecutamos el metodo para borrar consola
-                self.aInput = float(input("Digite el angulo de disparo: "))          # Pregunta angulo
-                self.XmaxInput = float(input("Digite la distancia(m): "))            # Pregunta distancia
-                self.tTotalInput = float(input("Digite el tiempo total de vuelo: ")) # Pregunta tiempo de vuelo
-            self.generateBall()                                                      # Genera el proyectil
+        if (pyxel.btnp(pyxel.KEY_SPACE)): self.generateBall()                                                      # Genera el proyectil
         if (pyxel.btnp(pyxel.KEY_R)): self.clearListBall() # R -> Resetear todo
     #----------------------------------------------------------------------------------------------------------------------------
     def generateBall(self): # METODO PARA GENERAR PROYECTIL
         # AGREGAR PROYECTIL A LA LISTA
         color = random.randint(1, 14) # Genera un color para el proyectil
-        if self.state == TypeSimulator.Simulator: # Compreuba estado de simulacion
-            self.listBalls.append(Ball(10,120,2,color,self.Triangulo.A,self.Triangulo.h))           
-        else:                                     # Si no es segun la entrada del teclado
-            self.listBalls.append(BallMathV(10,120,2,color,self.aInput,self.XmaxInput,self.tTotalInput))
+        self.listBalls.append(Ball(10,120,2,color,self.Triangulo.A,self.Triangulo.h))           
         # AGREGA DATOS A LA BASE DE DATOS
         if len(self.listBalls)==0: # Comprueba la longitud de la lista
             self.Data.append([self.listBalls[0].a,self.listBalls[0].vi,self.listBalls[0].viY,self.listBalls[0].vX,
@@ -234,4 +172,205 @@ class App(): # CLASE PRINCIPAL DEL PROGRAMA
         else:                  # Si no 
             os.system("clear") # Limpia con comando clear
 #--------------------------------------------------------------------------------------------------------------------------------
-App() # EJECUTAMOS PROGRAMA
+
+class Menu():
+    def __init__(self): # INICIALIZACION
+        # INICIALIZACION DE ESTADO
+        # INICIALIZAR VENTANA
+        pyxel.init( width      = 192,              # Ancho de ventana
+                    height     = 128,              # Altura de ventana
+                    caption    = "ParabolicShot",  # Titulo de la ventana
+                    fps        = 200,              # FPS del programa
+                    fullscreen = True,            # Estado de pantalla inicial
+                    scale      = 8)                # Eyscala de la ventana inicial
+        pyxel.load("ScreensResources.pyxres")
+        pyxel.mouse(True)
+        self.scene = Scene()
+        self.next = Bottom(155,100,15,10,11,"->",True)
+        self.back = Bottom(20,100,15,10,11,"<-",True)
+        self.mouse = MouseCheckLocation(1,1)
+        self.menuLocation = 0 # Menu Principal
+        pyxel.run(self.update,self.draw) # Asignamos los metodos de actualizacion para logica y dibujo
+    
+    def update(self):
+        self.mouse.update()
+        self.nextButtonState()
+        self.backButtonState()
+
+    def draw(self):
+        pyxel.cls(0)                # Color de fondo
+        self.scene.draw()
+        pyxel.text(8,3,"BallisticGames",9)
+        if self.menuLocation == 0:
+            pyxel.text(30,20,"Menu principal",10)
+            pyxel.text(30,40,
+                    "- Descripcion\n"
+                    +"- Objetivos\n"
+                    +"- Introduccion\n"
+                    +"- Areas academicas\n"
+                    +"- Introduccion\n"
+                    +"- Simulacion",10)
+        if self.menuLocation == 1:
+            pyxel.text(8,3,"BallisticGames",9)
+            pyxel.text(20,20,"Descripcion",10)
+            pyxel.text(20,40,"""
+Desarrollar un prototipo que represente
+el movimiento parabólico de un proyectil 
+utilizando diferentes mecanismos para 
+impulsarlo.
+""",10)
+        if self.menuLocation == 2:
+            pyxel.text(8,3,"BallisticGames",9)
+            pyxel.text(20,20,"Descripcion",10)
+            pyxel.text(20,40,"""
+Se pretende en este proyecto que los
+estudiantes simulen la situacion fisica
+descrita anteriormente con la ayuda de 
+un lenguaje de programación que le 
+permita desarrollar sus habilidades, en 
+el que dada unas condiciones iniciales 
+tales como el angulo de salida y el 
+""",10)
+        if self.menuLocation == 3:
+            pyxel.text(8,3,"BallisticGames",9)
+            pyxel.text(20,20,"Descripcion",10)
+            pyxel.text(20,40,"""
+alcance máximo, un objeto dibuje la 
+trayectoria del tiro parabólico que 
+realiza. 
+
+Con el análisis de este movimiento 
+se podrán obtener varios parámetros
+como son: velocidad inicial de 
+""",10)
+        if self.menuLocation == 4:
+            pyxel.text(8,3,"BallisticGames",9)
+            pyxel.text(20,20,"Descripcion",10)
+            pyxel.text(20,40,"""
+lanzamiento, altura máxima (distancia)
+y el tiempo total de vuelo (t).
+Además, se busca integrar relaciones
+o modelos funcionales entre variables
+e identificar y analizar propiedades 
+físicas, químicas y matemáticas entre
+variables.
+""",10)
+        if self.menuLocation == 5:
+            pyxel.text(8,3,"BallisticGames",9)
+            pyxel.text(20,20,"Objetivo Ciencias Naturales",10)
+            pyxel.text(20,40,"""
+Relacionar grupos funcionales con las 
+propiedades físicas y químicas de las 
+sustancias. o Explicar reacciones 
+químicas presentes en la vida diaria, 
+considerando: Representación y la 
+velocidad de las reacciones químicas 
+y los factores que la afectan.
+""",10)
+        if self.menuLocation == 6:
+            pyxel.text(8,3,"BallisticGames",9)
+            pyxel.text(20,20,"Objetivo Fisica",10)
+            pyxel.text(20,40,"""
+Identificar las fuerzas que actúan
+sobre un cuerpo, aplicando las Leyes 
+de Newton.
+""",10)
+        if self.menuLocation == 7:
+            pyxel.text(8,3,"BallisticGames",9)
+            pyxel.text(20,20,"Objetivo Matematicas",10)
+            pyxel.text(20,40,"""
+Identificar y comprender conceptos de 
+geometría analítica relacionados a la 
+línea recta, para ser aplicados en el 
+movimiento parabólico de un objeto
+""",10)
+        if self.menuLocation == 8:
+            pyxel.text(8,3,"BallisticGames",9)
+            pyxel.text(20,20,"Objetivo Informatica",10)
+            pyxel.text(20,40,"""
+Conocer y aplicar la herramienta de 
+App Inventor o Scratch en la solución
+de problemas relacionados con los 
+sistemas de información.
+""",10)
+        if self.menuLocation == 9:
+            pyxel.text(8,3,"BallisticGames",9)
+            pyxel.text(20,20,"Introduccion",10)
+            pyxel.text(20,40,"""
+Con la barra espaciadora disparas
+los proyectiles y regulas la 
+velocidad y angulo con el mouse
+""",10)
+        if self.menuLocation == 10:
+            pyxel.text(8,3,"BallisticGames",9)
+            pyxel.text(20,20,"Areas academicas",10)
+            pyxel.text(20,40,"""
+* Ciencias Naturales
+* Fisica
+* Matematicas
+* Informatica
+""",10)
+        self.next.draw()
+        self.back.draw()
+        
+
+    def nextButtonState(self):
+        if self.mouse.IsColliding(self.next):
+            self.next.col = 7
+            if (pyxel.btnp(pyxel.MOUSE_LEFT_BUTTON)):
+                self.next.col = 3
+                if self.menuLocation<=10: self.menuLocation += 1 
+                if self.menuLocation==11: App()
+        else:
+            self.next.col = 11
+    def backButtonState(self):
+        if self.mouse.IsColliding(self.back):
+            self.back.col = 7
+            if (pyxel.btnp(pyxel.MOUSE_LEFT_BUTTON)):
+                self.back.col = 3
+                if self.menuLocation>=0: self.menuLocation -=1
+        else:
+            self.back.col = 11
+#
+        
+class Scene:
+    def __init__(self):
+        self.tm = 0
+        self.u = 0
+        self.v = 0
+        self.w = 24
+        self.h = 16
+        
+    def draw(self):
+        pyxel.bltm(0,0,self.tm,self.u,self.v,self.w,self.h,0)
+        
+class Bottom:
+    def __init__(self,x,y,w,h,col,text,visible):
+        self.x = x
+        self.y = y
+        self.w = w
+        self.h = h
+        self.col = col
+        self.text = text
+        self.visible = visible
+    def draw(self):
+        if self.visible:
+            pyxel.rectb(self.x,self.y,self.w,self.h,self.col)
+            pyxel.text(self.x+3,self.y+3,self.text,self.col)
+            
+class MouseCheckLocation:
+    def __init__(self,w,h):
+        self.x = pyxel.mouse_x
+        self.y = pyxel.mouse_y
+        self.w = w
+        self.h = h
+    def update(self):
+        self.x = pyxel.mouse_x
+        self.y = pyxel.mouse_y
+    def IsColliding(self, other):
+        return self.x < other.x + other.w and \
+            self.x + self.w > other.x and \
+            self.y < other.y + other.h and \
+            self.y + self.h > other.y
+
+Menu() # EJECUTAMOS PROGRAMA
