@@ -158,10 +158,9 @@ class Pitagoras(): # CLASE PARA DETERMINAR POSICION RESPECTO A 2 VECTORES, SIEND
 class App(): # CLASE PRINCIPAL DEL PROGRAMA
     def __init__(self): # INICIALIZACION
         # INICIALIZACION DE ESTADO
-        self.clearConsole()                                        # Borramos consola
-        inputState = input("Desea usar el simulador? y/n:  ")      # Preguntamos estado
-        if inputState == "y": self.state = TypeSimulator.Simulator # Asignamos estado de simulacion
-        else: self.state = TypeSimulator.SimulatorData             # Asignamos estado de simulacion mediante datos
+        self.clearConsole()                                    # Borramos consola
+        self.state = TypeSimulator.Simulator                   # Asignamos estado de simulacion
+        # self.state = TypeSimulator.SimulatorData             # No recomendado para el publico
         # INICIALIZAR VENTANA
         pyxel.init( width      = 192,              # Ancho de ventana
                     height     = 128,              # Altura de ventana

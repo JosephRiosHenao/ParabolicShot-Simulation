@@ -30,9 +30,9 @@ $ python main.py
 
 ## Como utilizarlo
 
-Primero te preguntara si quieres ejecutar el simulado y/n
-en caso de elegir "y", entonces si damos a espacio podremos disparar proyectiles :D
-en caso de elegir "n", entonces si damos a espacio tendremos que poner unos datos en la consola
+Simplemente lo ejecutas e inmediatamente estaras adentro de la simulacion
+
+CON LA TECLA SPACE DISPARAS EL PROYECTIL
 
 El programa tambien te calculara ciertos datos por si solo
 <img src="ScreenshotsGifs\console.PNG" width="100%">
@@ -61,3 +61,5 @@ Mostrar/Ocultar cateto opuesto
 Mostrar/Ocultar cateto adyacente
 - `R`<br>
 Borrar todos los disparos anteriores
+- `SPACEBAR`<br>
+Disparas un proyectil
