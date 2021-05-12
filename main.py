@@ -122,13 +122,19 @@ class App(): # CLASE PRINCIPAL DEL PROGRAMA
         self.Triangulo = Pitagoras(10,120) # Cracion del triangulo respecto al vector 1 (X,Y)
         # INICIALIZACION DE NOMBRES DE COLUMNAS EN LA BD
         self.Data = [["a","V0 (m/s)","V0y (m/s)","V0x (m/s)","Ymax (m)","Ts (seg)","Tmax (seg)","Xmax (m)","Vf (m/s)","Vfy (m/s)"]]               
+        self.target = Target(random.randint(10,40))
         pyxel.run(self.update,self.draw) # Asignamos los metodos de actualizacion para logica y dibujo
     #-----------------------------------------------------------------------------------------------------------------------------
     def update(self): # METODOD DE LOGICA
+        # if game=
         self.checkInput() # Comprueba la pulsacion de teclas
-        self.Triangulo.update() # Si esta en modo simulacion ejecuta el triangulo
+        self.Triangulo.update() #  Si esta en modo simulacion ejecuta el triangulo
         for ball in self.listBalls: # Iteramos en la lista de proyectiles
             ball.update()           # Actualizamos la posicion de los proyectiles
+            self.target.checkColision(ball)
+            if (self.target.clean):
+                self.target.clean = False
+                self.clearListBall()
     #-----------------------------------------------------------------------------------------------------------------------------
     def draw (self): # MEOTODO DE DIBUJO
         pyxel.cls(0)                # Color de fondo
@@ -137,6 +143,7 @@ class App(): # CLASE PRINCIPAL DEL PROGRAMA
         self.Triangulo.draw()                 # Dibujar triangulo
         pyxel.text(5,5,"Angulo: "+str(self.Triangulo.A)+"°",15)    # Dibujamos angulo del triangulo
         pyxel.text(5,10,"Fuerza: "+str(self.Triangulo.h)+"m/s",15) # Dibujamos fuerza de disparo - hipotenusa
+        self.target.draw()
     #----------------------------------------------------------------------------------------------------------------------------
     def checkInput(self): # METODO COMPROBADOR DE ENTRADA DEL TECLADO
         if (pyxel.btnp(pyxel.KEY_SPACE)): self.generateBall()                                                      # Genera el proyectil
@@ -372,5 +379,39 @@ class MouseCheckLocation:
             self.x + self.w > other.x and \
             self.y < other.y + other.h and \
             self.y + self.h > other.y
+
+class Target():
+    def __init__(self,r):
+        self.r = r
+        self.randomPosition()
+        self.points = Points(0)
+        self.clean = False
+    def randomPosition(self):
+        self.x = random.randint(0,pyxel.width)
+        self.y = random.randint(0,pyxel.height-30)
+        while (self.x < pyxel.width/2):
+            self.x = random.randint(0,pyxel.width)
+        self.r = random.randint(5,10)
+    def checkColision(self,otherCicle):
+        distancia = math.sqrt( (self.x - otherCicle.x)*(self.x - otherCicle.x) + (self.y - otherCicle.y)*(self.y - otherCicle.y) );
+        if ( distancia < self.r + otherCicle.r ):
+            self.points.updatePoints(10)
+            self.randomPosition()
+            self.clean = True
+    def draw(self):
+        self.col = 7
+        for i in range(self.r):
+            pyxel.circb(self.x,self.y,self.r-i,self.col)
+            self.col = 14 if self.col == 7 else 7
+        self.points.draw()
+class Points():
+    def __init__(self,initialPoints):
+        self.points  = initialPoints
+    def updatePoints(self,points):
+        self.points += points
+    def draw(self):
+        pyxel.text((pyxel.width/2)-(pyxel.FONT_WIDTH*len("POINTS")/2),10,"POINTS",7)
+        pyxel.text((pyxel.width/2)-(pyxel.FONT_WIDTH*len(str(self.points)/2)),20,str(self.points),7)
+        
 
 Menu() # EJECUTAMOS PROGRAMA
