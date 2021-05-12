@@ -117,33 +117,180 @@ class App(): # CLASE PRINCIPAL DEL PROGRAMA
                     fps        = 200,              # FPS del programa
                     fullscreen = True,            # Estado de pantalla inicial
                     scale      = 8)                # Eyscala de la ventana inicial
+        self.game = False
         # INICIALIZACION DE VARIBALES
         self.listBalls = []                # Lista de objetos con proyectiles
         self.Triangulo = Pitagoras(10,120) # Cracion del triangulo respecto al vector 1 (X,Y)
         # INICIALIZACION DE NOMBRES DE COLUMNAS EN LA BD
         self.Data = [["a","V0 (m/s)","V0y (m/s)","V0x (m/s)","Ymax (m)","Ts (seg)","Tmax (seg)","Xmax (m)","Vf (m/s)","Vfy (m/s)"]]               
         self.target = Target(random.randint(10,40))
+        pyxel.load("ScreensResources.pyxres")
+        pyxel.mouse(True)
+        self.scene = Scene()
+        self.next = Bottom(155,100,15,10,11,"->",True)
+        self.back = Bottom(20,100,15,10,11,"<-",True)
+        self.mouse = MouseCheckLocation(1,1)
+        self.menuLocation = 0 # Menu Principal
         pyxel.run(self.update,self.draw) # Asignamos los metodos de actualizacion para logica y dibujo
     #-----------------------------------------------------------------------------------------------------------------------------
     def update(self): # METODOD DE LOGICA
-        # if game=
-        self.checkInput() # Comprueba la pulsacion de teclas
-        self.Triangulo.update() #  Si esta en modo simulacion ejecuta el triangulo
-        for ball in self.listBalls: # Iteramos en la lista de proyectiles
-            ball.update()           # Actualizamos la posicion de los proyectiles
-            self.target.checkColision(ball)
-            if (self.target.clean):
-                self.target.clean = False
-                self.clearListBall()
+        if (self.game):
+            pyxel.mouse(False)
+            self.checkInput() # Comprueba la pulsacion de teclas
+            self.Triangulo.update() #  Si esta en modo simulacion ejecuta el triangulo
+            for ball in self.listBalls: # Iteramos en la lista de proyectiles
+                ball.update()           # Actualizamos la posicion de los proyectiles
+                self.target.checkColision(ball)
+                if (self.target.clean):
+                    self.target.clean = False
+                    self.clearListBall()
+        else:
+            self.mouse.update()
+            self.nextButtonState()
+            self.backButtonState()
     #-----------------------------------------------------------------------------------------------------------------------------
     def draw (self): # MEOTODO DE DIBUJO
-        pyxel.cls(0)                # Color de fondo
-        for ball in self.listBalls: # Iteramos en la lista de proyectiles
-            ball.draw()             # Actualizamos posicion en pantalla
-        self.Triangulo.draw()                 # Dibujar triangulo
-        pyxel.text(5,5,"Angulo: "+str(self.Triangulo.A)+"°",15)    # Dibujamos angulo del triangulo
-        pyxel.text(5,10,"Fuerza: "+str(self.Triangulo.h)+"m/s",15) # Dibujamos fuerza de disparo - hipotenusa
-        self.target.draw()
+        if (self.game):
+            pyxel.cls(0)                # Color de fondo
+            for ball in self.listBalls: # Iteramos en la lista de proyectiles
+                ball.draw()             # Actualizamos posicion en pantalla
+            self.Triangulo.draw()                 # Dibujar triangulo
+            pyxel.text(5,5,"Angulo: "+str(self.Triangulo.A)+"°",7)    # Dibujamos angulo del triangulo
+            pyxel.text(5,15,"Fuerza: "+str(self.Triangulo.h)+"m/s",7) # Dibujamos fuerza de disparo - hipotenusa
+            self.target.draw()
+        else:
+            pyxel.cls(0)                # Color de fondo
+            self.scene.draw()
+            pyxel.text(8,3,"BallisticGames",9)
+            if self.menuLocation == 0:
+                pyxel.text(30,20,"Menu principal",10)
+                pyxel.text(30,40,
+                    "- Descripcion\n"
+                    +"- Objetivos\n"
+                    +"- Introduccion\n"
+                    +"- Areas academicas\n"
+                    +"- Introduccion\n"
+                    +"- Simulacion",10)
+            if self.menuLocation == 1:
+                pyxel.text(8,3,"BallisticGames",9)
+                pyxel.text(20,20,"Descripcion",10)
+                pyxel.text(20,40,"""
+Desarrollar un prototipo que represente
+el movimiento parabólico de un proyectil 
+utilizando diferentes mecanismos para 
+impulsarlo.
+    """,10)
+            if self.menuLocation == 2:
+                pyxel.text(8,3,"BallisticGames",9)
+                pyxel.text(20,20,"Descripcion",10)
+                pyxel.text(20,40,"""
+Se pretende en este proyecto que los
+estudiantes simulen la situacion fisica
+descrita anteriormente con la ayuda de 
+un lenguaje de programación que le 
+permita desarrollar sus habilidades, en 
+el que dada unas condiciones iniciales 
+tales como el angulo de salida y el 
+    """,10)
+            if self.menuLocation == 3:
+                pyxel.text(8,3,"BallisticGames",9)
+                pyxel.text(20,20,"Descripcion",10)
+                pyxel.text(20,40,"""
+alcance máximo, un objeto dibuje la 
+trayectoria del tiro parabólico que 
+realiza. 
+
+Con el análisis de este movimiento 
+se podrán obtener varios parámetros
+como son: velocidad inicial de 
+    """,10)
+            if self.menuLocation == 4:
+                pyxel.text(8,3,"BallisticGames",9)
+                pyxel.text(20,20,"Descripcion",10)
+                pyxel.text(20,40,"""
+lanzamiento, altura máxima (distancia)
+y el tiempo total de vuelo (t).
+Además, se busca integrar relaciones
+o modelos funcionales entre variables
+e identificar y analizar propiedades 
+físicas, químicas y matemáticas entre
+variables.
+    """,10)
+            if self.menuLocation == 5:
+                pyxel.text(8,3,"BallisticGames",9)
+                pyxel.text(20,20,"Objetivo Ciencias Naturales",10)
+                pyxel.text(20,40,"""
+Relacionar grupos funcionales con las 
+propiedades físicas y químicas de las 
+sustancias. o Explicar reacciones 
+químicas presentes en la vida diaria, 
+considerando: Representación y la 
+velocidad de las reacciones químicas 
+y los factores que la afectan.
+    """,10)
+            if self.menuLocation == 6:
+                pyxel.text(8,3,"BallisticGames",9)
+                pyxel.text(20,20,"Objetivo Fisica",10)
+                pyxel.text(20,40,"""
+Identificar las fuerzas que actúan
+sobre un cuerpo, aplicando las Leyes 
+de Newton.
+    """,10)
+            if self.menuLocation == 7:
+                pyxel.text(8,3,"BallisticGames",9)
+                pyxel.text(20,20,"Objetivo Matematicas",10)
+                pyxel.text(20,40,"""
+Identificar y comprender conceptos de 
+geometría analítica relacionados a la 
+línea recta, para ser aplicados en el 
+movimiento parabólico de un objeto
+    """,10)
+            if self.menuLocation == 8:
+                pyxel.text(8,3,"BallisticGames",9)
+                pyxel.text(20,20,"Objetivo Informatica",10)
+                pyxel.text(20,40,"""
+Conocer y aplicar la herramienta de 
+App Inventor o Scratch en la solución
+de problemas relacionados con los 
+sistemas de información.
+    """,10)
+            if self.menuLocation == 9:
+                pyxel.text(8,3,"BallisticGames",9)
+                pyxel.text(20,20,"Introduccion",10)
+                pyxel.text(20,40,"""
+Con la barra espaciadora disparas
+los proyectiles y regulas la 
+velocidad y angulo con el mouse
+    """,10)
+            if self.menuLocation == 10:
+                pyxel.text(8,3,"BallisticGames",9)
+                pyxel.text(20,20,"Areas academicas",10)
+                pyxel.text(20,40,"""
+* Ciencias Naturales
+* Fisica
+* Matematicas
+* Informatica
+    """,10)
+            self.next.draw()
+            self.back.draw()
+    def nextButtonState(self):
+        if self.mouse.IsColliding(self.next):
+            self.next.col = 7
+            if (pyxel.btnp(pyxel.MOUSE_LEFT_BUTTON)):
+                self.next.col = 3
+                if self.menuLocation<=10: self.menuLocation += 1 
+                if self.menuLocation==11: self.game = True
+        else:
+            self.next.col = 11
+    def backButtonState(self):
+        if self.mouse.IsColliding(self.back):
+            self.back.col = 7
+            if (pyxel.btnp(pyxel.MOUSE_LEFT_BUTTON)):
+                self.back.col = 3
+                if self.menuLocation>=0: self.menuLocation -=1
+        else:
+            self.back.col = 11
+        
     #----------------------------------------------------------------------------------------------------------------------------
     def checkInput(self): # METODO COMPROBADOR DE ENTRADA DEL TECLADO
         if (pyxel.btnp(pyxel.KEY_SPACE)): self.generateBall()                                                      # Genera el proyectil
@@ -179,167 +326,6 @@ class App(): # CLASE PRINCIPAL DEL PROGRAMA
         else:                  # Si no 
             os.system("clear") # Limpia con comando clear
 #--------------------------------------------------------------------------------------------------------------------------------
-
-class Menu():
-    def __init__(self): # INICIALIZACION
-        # INICIALIZACION DE ESTADO
-        # INICIALIZAR VENTANA
-        pyxel.init( width      = 192,              # Ancho de ventana
-                    height     = 128,              # Altura de ventana
-                    caption    = "ParabolicShot",  # Titulo de la ventana
-                    fps        = 200,              # FPS del programa
-                    fullscreen = True,            # Estado de pantalla inicial
-                    scale      = 8)                # Eyscala de la ventana inicial
-        pyxel.load("ScreensResources.pyxres")
-        pyxel.mouse(True)
-        self.scene = Scene()
-        self.next = Bottom(155,100,15,10,11,"->",True)
-        self.back = Bottom(20,100,15,10,11,"<-",True)
-        self.mouse = MouseCheckLocation(1,1)
-        self.menuLocation = 0 # Menu Principal
-        pyxel.run(self.update,self.draw) # Asignamos los metodos de actualizacion para logica y dibujo
-    
-    def update(self):
-        self.mouse.update()
-        self.nextButtonState()
-        self.backButtonState()
-
-    def draw(self):
-        pyxel.cls(0)                # Color de fondo
-        self.scene.draw()
-        pyxel.text(8,3,"BallisticGames",9)
-        if self.menuLocation == 0:
-            pyxel.text(30,20,"Menu principal",10)
-            pyxel.text(30,40,
-                    "- Descripcion\n"
-                    +"- Objetivos\n"
-                    +"- Introduccion\n"
-                    +"- Areas academicas\n"
-                    +"- Introduccion\n"
-                    +"- Simulacion",10)
-        if self.menuLocation == 1:
-            pyxel.text(8,3,"BallisticGames",9)
-            pyxel.text(20,20,"Descripcion",10)
-            pyxel.text(20,40,"""
-Desarrollar un prototipo que represente
-el movimiento parabólico de un proyectil 
-utilizando diferentes mecanismos para 
-impulsarlo.
-""",10)
-        if self.menuLocation == 2:
-            pyxel.text(8,3,"BallisticGames",9)
-            pyxel.text(20,20,"Descripcion",10)
-            pyxel.text(20,40,"""
-Se pretende en este proyecto que los
-estudiantes simulen la situacion fisica
-descrita anteriormente con la ayuda de 
-un lenguaje de programación que le 
-permita desarrollar sus habilidades, en 
-el que dada unas condiciones iniciales 
-tales como el angulo de salida y el 
-""",10)
-        if self.menuLocation == 3:
-            pyxel.text(8,3,"BallisticGames",9)
-            pyxel.text(20,20,"Descripcion",10)
-            pyxel.text(20,40,"""
-alcance máximo, un objeto dibuje la 
-trayectoria del tiro parabólico que 
-realiza. 
-
-Con el análisis de este movimiento 
-se podrán obtener varios parámetros
-como son: velocidad inicial de 
-""",10)
-        if self.menuLocation == 4:
-            pyxel.text(8,3,"BallisticGames",9)
-            pyxel.text(20,20,"Descripcion",10)
-            pyxel.text(20,40,"""
-lanzamiento, altura máxima (distancia)
-y el tiempo total de vuelo (t).
-Además, se busca integrar relaciones
-o modelos funcionales entre variables
-e identificar y analizar propiedades 
-físicas, químicas y matemáticas entre
-variables.
-""",10)
-        if self.menuLocation == 5:
-            pyxel.text(8,3,"BallisticGames",9)
-            pyxel.text(20,20,"Objetivo Ciencias Naturales",10)
-            pyxel.text(20,40,"""
-Relacionar grupos funcionales con las 
-propiedades físicas y químicas de las 
-sustancias. o Explicar reacciones 
-químicas presentes en la vida diaria, 
-considerando: Representación y la 
-velocidad de las reacciones químicas 
-y los factores que la afectan.
-""",10)
-        if self.menuLocation == 6:
-            pyxel.text(8,3,"BallisticGames",9)
-            pyxel.text(20,20,"Objetivo Fisica",10)
-            pyxel.text(20,40,"""
-Identificar las fuerzas que actúan
-sobre un cuerpo, aplicando las Leyes 
-de Newton.
-""",10)
-        if self.menuLocation == 7:
-            pyxel.text(8,3,"BallisticGames",9)
-            pyxel.text(20,20,"Objetivo Matematicas",10)
-            pyxel.text(20,40,"""
-Identificar y comprender conceptos de 
-geometría analítica relacionados a la 
-línea recta, para ser aplicados en el 
-movimiento parabólico de un objeto
-""",10)
-        if self.menuLocation == 8:
-            pyxel.text(8,3,"BallisticGames",9)
-            pyxel.text(20,20,"Objetivo Informatica",10)
-            pyxel.text(20,40,"""
-Conocer y aplicar la herramienta de 
-App Inventor o Scratch en la solución
-de problemas relacionados con los 
-sistemas de información.
-""",10)
-        if self.menuLocation == 9:
-            pyxel.text(8,3,"BallisticGames",9)
-            pyxel.text(20,20,"Introduccion",10)
-            pyxel.text(20,40,"""
-Con la barra espaciadora disparas
-los proyectiles y regulas la 
-velocidad y angulo con el mouse
-""",10)
-        if self.menuLocation == 10:
-            pyxel.text(8,3,"BallisticGames",9)
-            pyxel.text(20,20,"Areas academicas",10)
-            pyxel.text(20,40,"""
-* Ciencias Naturales
-* Fisica
-* Matematicas
-* Informatica
-""",10)
-        self.next.draw()
-        self.back.draw()
-        
-
-    def nextButtonState(self):
-        if self.mouse.IsColliding(self.next):
-            self.next.col = 7
-            if (pyxel.btnp(pyxel.MOUSE_LEFT_BUTTON)):
-                self.next.col = 3
-                if self.menuLocation<=10: self.menuLocation += 1 
-                if self.menuLocation==11: App()
-        else:
-            self.next.col = 11
-    def backButtonState(self):
-        if self.mouse.IsColliding(self.back):
-            self.back.col = 7
-            if (pyxel.btnp(pyxel.MOUSE_LEFT_BUTTON)):
-                self.back.col = 3
-                if self.menuLocation>=0: self.menuLocation -=1
-        else:
-            self.back.col = 11
-#
-        
 class Scene:
     def __init__(self):
         self.tm = 0
@@ -411,7 +397,7 @@ class Points():
         self.points += points
     def draw(self):
         pyxel.text((pyxel.width/2)-(pyxel.FONT_WIDTH*len("POINTS")/2),10,"POINTS",7)
-        pyxel.text((pyxel.width/2)-(pyxel.FONT_WIDTH*len(str(self.points)/2)),20,str(self.points),7)
+        pyxel.text((pyxel.width/2)-(pyxel.FONT_WIDTH*len(str(self.points))/2),20,str(self.points),7)
         
 
-Menu() # EJECUTAMOS PROGRAMA
+App() # EJECUTAMOS PROGRAMA
