@@ -6,6 +6,7 @@ import time     # Libreria que calcula el tiempo respecto a la inicializacion de
 import tabulate # Tabula los deatos obtenidos para mayor presentacion
 import os       # Determina el sistema operativo para limpiar la cosola
 import enum     # Libreria para estados
+from keyboardController import KeyboardInput
 #---------------------------------------------------------------------------------------------------------------------------------
 G = 9.81 # Constante de gravedad
 #---------------------------------------------------------------------------------------------------------------------------------
@@ -130,7 +131,12 @@ class App(): # CLASE PRINCIPAL DEL PROGRAMA
         self.next = Bottom(155,100,15,10,11,"->",True)
         self.back = Bottom(20,100,15,10,11,"<-",True)
         self.mouse = MouseCheckLocation(1,1)
-        self.menuLocation = 0 # Menu Principal
+        self.menuLocation = -1 # Menu Principal
+        
+        self.inputUsermame = KeyboardInput()
+        self.inputPass = KeyboardInput()
+        self.squareInputUser = Bottom(30,50,40,10,7,"",False);
+        self.squareInputPass = Bottom(30,75,40,10,7,"",False);
         pyxel.run(self.update,self.draw) # Asignamos los metodos de actualizacion para logica y dibujo
     #-----------------------------------------------------------------------------------------------------------------------------
     def update(self): # METODOD DE LOGICA
@@ -148,7 +154,24 @@ class App(): # CLASE PRINCIPAL DEL PROGRAMA
             self.mouse.update()
             self.nextButtonState()
             self.backButtonState()
-    #-----------------------------------------------------------------------------------------------------------------------------
+            if (self.menuLocation == -1): 
+                self.squareInputUser.visible = True;
+                self.squareInputPass.visible = True;
+                self.inputUsermame.update()
+                self.inputPass.update()
+                self.squareInputUser.text = self.inputUsermame.storage;
+                self.squareInputPass.text = self.inputPass.storage;
+                if (self.mouse.IsColliding(self.squareInputUser)):
+                    if (pyxel.btnp(pyxel.MOUSE_LEFT_BUTTON)):
+                        self.inputUsermame.active = True;
+                        self.inputPass.active = False;
+                if (self.mouse.IsColliding(self.squareInputPass)):
+                    if (pyxel.btnp(pyxel.MOUSE_LEFT_BUTTON)):
+                        self.inputUsermame.active = False;
+                        self.inputPass.active = True;    
+                self.squareInputUser.update();
+                self.squareInputPass.update();  
+#-----------------------------------------------------------------------------------------------------------------------------
     def draw (self): # MEOTODO DE DIBUJO
         if (self.game):
             pyxel.cls(0)                # Color de fondo
@@ -162,6 +185,18 @@ class App(): # CLASE PRINCIPAL DEL PROGRAMA
             pyxel.cls(0)                # Color de fondo
             self.scene.draw()
             pyxel.text(8,3,"BallisticGames",9)
+            if self.menuLocation == -1:
+                pyxel.text(30,20,"Pantalla de login",10)
+                pyxel.text(30,40,
+                    "USUARIO\n"
+                    +"\n"
+                    +"\n"
+                    +"\n"
+                    +"CONTRASENIA\n"
+                    +"\n"
+                    +"\n",10)
+                self.squareInputUser.draw();
+                self.squareInputPass.draw();
             if self.menuLocation == 0:
                 pyxel.text(30,20,"Menu principal",10)
                 pyxel.text(30,40,
@@ -277,9 +312,18 @@ velocidad y angulo con el mouse
         if self.mouse.IsColliding(self.next):
             self.next.col = 7
             if (pyxel.btnp(pyxel.MOUSE_LEFT_BUTTON)):
-                self.next.col = 3
-                if self.menuLocation<=10: self.menuLocation += 1 
-                if self.menuLocation==11: self.game = True
+                
+                if (self.menuLocation == -1):
+                    if (self.inputPass.storage == "ADMIN" and self.inputUsermame.storage == "ADMIN"):
+                        self.menuLocation = 0;
+                    else:
+                        print("error en login!! @$%^sfe@")
+                else:
+                    self.next.col = 3
+                    if self.menuLocation<=10: self.menuLocation += 1 
+                    if self.menuLocation==11: self.game = True
+                    
+                
         else:
             self.next.col = 11
     def backButtonState(self):
@@ -346,6 +390,9 @@ class Bottom:
         self.col = col
         self.text = text
         self.visible = visible
+    def update (self):
+        if ((len(self.text)+1)*pyxel.FONT_WIDTH > self.w):
+            self.w = (len(self.text)+1)*pyxel.FONT_WIDTH;
     def draw(self):
         if self.visible:
             pyxel.rectb(self.x,self.y,self.w,self.h,self.col)
